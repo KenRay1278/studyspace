@@ -21,7 +21,7 @@ export default async function Home({ searchParams }: HomeProps) {
       redirect(`/join/${join}`);
     }
 
-    const dashboardData = await getDashboardData(user.id);
+    const dashboardData = await getDashboardData(user);
 
     return (
       <ProjectDashboard

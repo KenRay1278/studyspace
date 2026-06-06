@@ -2,7 +2,8 @@ import { Award, Download } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { displayName, initials } from "@/lib/format";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { displayName } from "@/lib/format";
 import type { LedgerEntry, WorkspaceMember } from "@/lib/types";
 
 type ContributionsViewProps = {
@@ -103,9 +104,10 @@ export function ContributionsView({
                     <div key={member.user_id}>
                       <div className="mb-2 flex items-center justify-between gap-3 text-sm">
                         <div className="flex items-center gap-2">
-                          <span className="flex size-8 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-violet-700">
-                            {initials(name)}
-                          </span>
+                          <UserAvatar
+                            className="size-8"
+                            profile={member.profiles}
+                          />
                           <span className="font-medium">{name}</span>
                         </div>
                         <span className="text-primary">

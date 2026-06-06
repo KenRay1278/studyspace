@@ -7,7 +7,8 @@ import { Folder, Loader2, LogIn, Plus, Search } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Button } from "@/components/ui/button";
-import { displayName, initials, roleLabel } from "@/lib/format";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { displayName, roleLabel } from "@/lib/format";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type {
   Profile,
@@ -159,9 +160,7 @@ export function ProjectDashboard({
           </nav>
 
           <div className="mt-auto flex items-center gap-3 border-t px-4 py-4">
-            <div className="flex size-9 items-center justify-center rounded-full bg-violet-200 text-xs font-semibold text-violet-700">
-              {initials(displayName(profile))}
-            </div>
+            <UserAvatar className="size-9" profile={profile} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
                 {displayName(profile)}
@@ -322,7 +321,7 @@ export function ProjectDashboard({
               <input
                 className="h-10 w-full rounded-md border px-3 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20"
                 onChange={(event) => setInviteCode(event.target.value)}
-                placeholder="ABC123DEF456 or http://localhost:3000/join/ABC123DEF456"
+                placeholder="ABC123DEF456 or your StudySpace invite link"
                 value={inviteCode}
               />
             </label>

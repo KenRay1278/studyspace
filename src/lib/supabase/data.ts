@@ -30,8 +30,22 @@ export async function requireUser() {
   return user;
 }
 
-export async function getDashboardData(userId: string) {
+export async function getDashboardData(user: {
+  id: string;
+  user_metadata: Record<string, unknown>;
+}) {
   const supabase = await createSupabaseServerClient();
+  const metadata = user.user_metadata;
+  const fullName = metadata.full_name ?? metadata.name;
+  const avatarUrl = metadata.avatar_url ?? metadata.picture;
+
+  await supabase
+    .from("profiles")
+    .update({
+      avatar_url: typeof avatarUrl === "string" ? avatarUrl : null,
+      full_name: typeof fullName === "string" ? fullName : null,
+    })
+    .eq("id", user.id);
 
   const [{ data: workspaces }, { data: memberships }, { data: profile }] =
     await Promise.all([
@@ -42,8 +56,8 @@ export async function getDashboardData(userId: string) {
       supabase
         .from("workspace_members")
         .select("workspace_id,user_id,role")
-        .eq("user_id", userId),
-      supabase.from("profiles").select("*").eq("id", userId).single(),
+        .eq("user_id", user.id),
+      supabase.from("profiles").select("*").eq("id", user.id).single(),
     ]);
 
   return {
@@ -56,6 +70,17 @@ export async function getDashboardData(userId: string) {
 export async function getWorkspaceBundle(workspaceId: string) {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
+  const metadata = user.user_metadata;
+  const fullName = metadata.full_name ?? metadata.name;
+  const avatarUrl = metadata.avatar_url ?? metadata.picture;
+
+  await supabase
+    .from("profiles")
+    .update({
+      avatar_url: typeof avatarUrl === "string" ? avatarUrl : null,
+      full_name: typeof fullName === "string" ? fullName : null,
+    })
+    .eq("id", user.id);
 
   const { data: workspace } = await supabase
     .from("workspaces")

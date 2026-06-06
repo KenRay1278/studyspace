@@ -3,7 +3,8 @@
 import { Printer } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { displayName, formatDate, initials } from "@/lib/format";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { displayName, formatDate } from "@/lib/format";
 import type { LedgerEntry, Workspace, WorkspaceMember } from "@/lib/types";
 
 type ProofOfWorkViewProps = {
@@ -99,9 +100,10 @@ export function ProofOfWorkView({
                       <div key={member.user_id}>
                         <div className="mb-2 flex items-center justify-between text-sm">
                           <span className="flex items-center gap-2 font-medium">
-                            <span className="flex size-7 items-center justify-center rounded-full bg-violet-100 text-xs text-violet-700">
-                              {initials(name)}
-                            </span>
+                            <UserAvatar
+                              className="size-7"
+                              profile={member.profiles}
+                            />
                             {name}
                           </span>
                           <span>

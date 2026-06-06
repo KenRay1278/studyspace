@@ -9,7 +9,19 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createSupabaseServerClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data } = await supabase.auth.exchangeCodeForSession(code);
+    const user = data.user;
+
+    if (user) {
+      const metadata = user.user_metadata;
+      await supabase
+        .from("profiles")
+        .update({
+          avatar_url: metadata.avatar_url ?? metadata.picture ?? null,
+          full_name: metadata.full_name ?? metadata.name ?? null,
+        })
+        .eq("id", user.id);
+    }
   }
 
   return NextResponse.redirect(new URL(next, requestUrl.origin));

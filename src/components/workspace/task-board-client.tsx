@@ -3,9 +3,11 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  AlertTriangle,
   Check,
   Clock,
   Edit3,
+  Eye,
   Loader2,
   Plus,
   RotateCcw,
@@ -17,7 +19,8 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { displayName, initials, statusLabel } from "@/lib/format";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { displayName, statusLabel } from "@/lib/format";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { cn } from "@/lib/utils";
 import type {
@@ -51,12 +54,17 @@ const emptyForm: TaskFormState = {
   weight: "5",
 };
 
+const TASK_TITLE_MAX_LENGTH = 160;
+const TASK_DESCRIPTION_MAX_LENGTH = 1000;
+const TASK_CATEGORY_MAX_LENGTH = 80;
+
 const statusTone: Record<TaskStatus, string> = {
   open: "bg-stone-100 text-stone-700",
   claimed: "bg-amber-100 text-amber-700",
   pending_approval: "bg-violet-100 text-violet-700",
+  rejected: "bg-rose-100 text-rose-700",
   verified: "bg-emerald-100 text-emerald-700",
-  dropped: "bg-rose-100 text-rose-700",
+  dropped: "bg-stone-200 text-stone-700",
 };
 
 export function TaskBoardClient({
@@ -70,8 +78,11 @@ export function TaskBoardClient({
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [modalTask, setModalTask] = useState<Task | null>(null);
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
+  const [claimTask, setClaimTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState<TaskFormState>(emptyForm);
   const canEdit = role === "owner" || role === "editor";
@@ -97,6 +108,7 @@ export function TaskBoardClient({
   const stats = {
     open: tasks.filter((task) => task.status === "open").length,
     pending: tasks.filter((task) => task.status === "pending_approval").length,
+    rejected: tasks.filter((task) => task.status === "rejected").length,
     verified: tasks.filter((task) => task.status === "verified").length,
     totalWeight: tasks
       .filter((task) => task.status === "verified")
@@ -107,6 +119,7 @@ export function TaskBoardClient({
     setModalTask(null);
     setForm(emptyForm);
     setError(null);
+    setFormError(null);
     setIsModalOpen(true);
   }
 
@@ -119,7 +132,16 @@ export function TaskBoardClient({
       weight: String(task.weight),
     });
     setError(null);
+    setFormError(null);
     setIsModalOpen(true);
+  }
+
+  function updateFormField(
+    field: keyof TaskFormState,
+    value: TaskFormState[keyof TaskFormState],
+  ) {
+    setForm((current) => ({ ...current, [field]: value }));
+    setFormError(null);
   }
 
   async function runAction(label: string, action: () => Promise<void>) {
@@ -129,12 +151,14 @@ export function TaskBoardClient({
     try {
       await action();
       router.refresh();
+      return true;
     } catch (actionError) {
       setError(
         actionError instanceof Error
           ? actionError.message
           : "Something went wrong.",
       );
+      return false;
     } finally {
       setBusyAction(null);
     }
@@ -142,23 +166,55 @@ export function TaskBoardClient({
 
   async function saveTask() {
     const weight = Number(form.weight);
+    const title = form.title.trim();
+    const category = form.category.trim() || "General";
 
-    if (!form.title.trim()) {
-      setError("Task title is required.");
+    setFormError(null);
+
+    if (title.length < 2) {
+      setFormError("Enter a task title with at least 2 characters.");
+      return;
+    }
+
+    if (title.length > TASK_TITLE_MAX_LENGTH) {
+      setFormError(
+        `Keep the task title within ${TASK_TITLE_MAX_LENGTH} characters.`,
+      );
+      return;
+    }
+
+    if (category.length < 2) {
+      setFormError("Enter a category with at least 2 characters.");
+      return;
+    }
+
+    if (category.length > TASK_CATEGORY_MAX_LENGTH) {
+      setFormError(
+        `Keep the category within ${TASK_CATEGORY_MAX_LENGTH} characters.`,
+      );
+      return;
+    }
+
+    if (form.description.trim().length > TASK_DESCRIPTION_MAX_LENGTH) {
+      setFormError(
+        `Keep the description within ${TASK_DESCRIPTION_MAX_LENGTH} characters.`,
+      );
       return;
     }
 
     if (!Number.isInteger(weight) || weight < 1 || weight > 100) {
-      setError("Weight must be a whole number from 1 to 100.");
+      setFormError("Weight must be a whole number from 1 to 100.");
       return;
     }
 
-    await runAction("save-task", async () => {
+    setBusyAction("save-task");
+
+    try {
       const supabase = createSupabaseBrowserClient();
       const payload = {
-        category: form.category.trim() || "General",
+        category,
         description: form.description.trim() || null,
-        title: form.title.trim(),
+        title,
         weight,
       };
 
@@ -170,10 +226,18 @@ export function TaskBoardClient({
             workspace_id: workspaceId,
           });
 
-      if (saveError) throw new Error(saveError.message);
+      if (saveError) {
+        setFormError(getTaskSaveErrorMessage(saveError.message));
+        return;
+      }
 
       setIsModalOpen(false);
-    });
+      router.refresh();
+    } catch {
+      setFormError("We could not save this task. Please try again.");
+    } finally {
+      setBusyAction(null);
+    }
   }
 
   async function deleteTask(task: Task) {
@@ -188,7 +252,7 @@ export function TaskBoardClient({
   }
 
   async function rpcTask(action: string, taskId: string, args = {}) {
-    await runAction(`${action}-${taskId}`, async () => {
+    return runAction(`${action}-${taskId}`, async () => {
       const supabase = createSupabaseBrowserClient();
       const { error: rpcError } = await supabase.rpc(action, {
         p_task_id: taskId,
@@ -196,6 +260,12 @@ export function TaskBoardClient({
       });
       if (rpcError) throw new Error(rpcError.message);
     });
+  }
+
+  async function confirmClaim() {
+    if (!claimTask) return;
+    const succeeded = await rpcTask("claim_task", claimTask.id);
+    if (succeeded) setClaimTask(null);
   }
 
   return (
@@ -229,9 +299,10 @@ export function TaskBoardClient({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-4 gap-4">
+      <div className="mt-6 grid grid-cols-5 gap-4">
         <StatCard label="Open Bounties" value={stats.open} />
         <StatCard label="Pending Approval" value={stats.pending} />
+        <StatCard label="Rejected" value={stats.rejected} />
         <StatCard label="Verified Tasks" value={stats.verified} />
         <StatCard label="Verified Weight" value={stats.totalWeight} accent />
       </div>
@@ -251,7 +322,7 @@ export function TaskBoardClient({
           <EmptyTasks canEdit={canEdit} onCreate={openCreateModal} />
         ) : (
           <div>
-            <div className="grid min-w-[1180px] grid-cols-[1fr_190px_170px_110px_280px] border-b bg-secondary/40 px-5 py-3 text-xs font-medium text-muted-foreground">
+            <div className="grid min-w-[1240px] grid-cols-[minmax(0,1fr)_190px_170px_110px_320px] border-b bg-secondary/40 px-5 py-3 text-xs font-medium text-muted-foreground">
               <span>Bounty Name</span>
               <span>Assignee</span>
               <span>Status</span>
@@ -268,10 +339,6 @@ export function TaskBoardClient({
               const hasCurrentUserVoted = taskVotes.some(
                 (vote) => vote.voter_id === currentUserId,
               );
-              const isFailed =
-                task.status === "pending_approval" &&
-                taskVotes.length >= eligibleVoters &&
-                approvals < approvalsNeeded;
               const assignee = task.claimed_by
                 ? memberById.get(task.claimed_by)
                 : null;
@@ -281,16 +348,23 @@ export function TaskBoardClient({
 
               return (
                 <div
-                  className="grid min-w-[1180px] grid-cols-[1fr_190px_170px_110px_280px] items-center border-b px-5 py-4 last:border-b-0"
+                  className="grid min-w-[1240px] grid-cols-[minmax(0,1fr)_190px_170px_110px_320px] items-center border-b px-5 py-4 last:border-b-0"
                   key={task.id}
                 >
-                  <div>
-                    <p className="font-medium">{task.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                  <div className="min-w-0 pr-5">
+                    <button
+                      className="max-w-full text-left font-medium hover:underline"
+                      onClick={() => setDetailTask(task)}
+                      type="button"
+                    >
+                      <span className="block truncate">{task.title}</span>
+                    </button>
+                    <p className="mt-1 line-clamp-2 break-all text-sm text-muted-foreground">
                       #{task.task_code} - {task.category}
                       {task.description ? ` - ${task.description}` : ""}
                     </p>
-                    {task.status === "pending_approval" ? (
+                    {task.status === "pending_approval" ||
+                    task.status === "rejected" ? (
                       <p className="mt-1 text-xs text-muted-foreground">
                         {approvals}/{approvalsNeeded} approvals -{" "}
                         {taskVotes.length}/{eligibleVoters} votes cast
@@ -299,9 +373,10 @@ export function TaskBoardClient({
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     {assignee ? (
-                      <span className="flex size-7 items-center justify-center rounded-full bg-violet-100 text-xs font-medium text-violet-700">
-                        {initials(assigneeName)}
-                      </span>
+                      <UserAvatar
+                        className="size-7"
+                        profile={assignee.profiles}
+                      />
                     ) : null}
                     {assigneeName}
                   </div>
@@ -318,15 +393,15 @@ export function TaskBoardClient({
                   </span>
                   <div className="flex flex-wrap gap-2">
                     <TaskActions
-                      approvalsNeeded={approvalsNeeded}
                       busyAction={busyAction}
                       canEdit={canEdit}
                       currentUserId={currentUserId}
                       hasCurrentUserVoted={hasCurrentUserVoted}
-                      isFailed={isFailed}
                       onDelete={() => deleteTask(task)}
                       onDrop={() => rpcTask("drop_failed_task", task.id)}
+                      onDetails={() => setDetailTask(task)}
                       onEdit={() => openEditModal(task)}
+                      onClaim={() => setClaimTask(task)}
                       onReopen={() => rpcTask("reopen_failed_task", task.id)}
                       onRpc={(name, args) => rpcTask(name, task.id, args)}
                       task={task}
@@ -355,38 +430,38 @@ export function TaskBoardClient({
                 <span className="text-sm font-medium">Title</span>
                 <input
                   className="h-10 w-full rounded-md border px-3 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  maxLength={TASK_TITLE_MAX_LENGTH}
                   onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      title: event.target.value,
-                    }))
+                    updateFormField("title", event.target.value)
                   }
                   value={form.title}
                 />
+                <span className="block text-right text-xs text-muted-foreground">
+                  {form.title.length}/{TASK_TITLE_MAX_LENGTH}
+                </span>
               </label>
               <label className="block space-y-2">
                 <span className="text-sm font-medium">Description</span>
                 <textarea
                   className="min-h-24 w-full resize-none rounded-md border px-3 py-2 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  maxLength={TASK_DESCRIPTION_MAX_LENGTH}
                   onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      description: event.target.value,
-                    }))
+                    updateFormField("description", event.target.value)
                   }
                   value={form.description}
                 />
+                <span className="block text-right text-xs text-muted-foreground">
+                  {form.description.length}/{TASK_DESCRIPTION_MAX_LENGTH}
+                </span>
               </label>
               <div className="grid grid-cols-2 gap-4">
                 <label className="block space-y-2">
                   <span className="text-sm font-medium">Category</span>
                   <input
                     className="h-10 w-full rounded-md border px-3 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    maxLength={TASK_CATEGORY_MAX_LENGTH}
                     onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        category: event.target.value,
-                      }))
+                      updateFormField("category", event.target.value)
                     }
                     value={form.category}
                   />
@@ -398,21 +473,30 @@ export function TaskBoardClient({
                     min={1}
                     max={100}
                     onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        weight: event.target.value,
-                      }))
+                      updateFormField("weight", event.target.value)
                     }
                     type="number"
                     value={form.weight}
                   />
                 </label>
               </div>
+              {formError ? (
+                <div
+                  aria-live="polite"
+                  className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                  role="alert"
+                >
+                  {formError}
+                </div>
+              ) : null}
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <Button
                 disabled={busyAction === "save-task"}
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setFormError(null);
+                  setIsModalOpen(false);
+                }}
                 variant="outline"
               >
                 Cancel
@@ -429,8 +513,78 @@ export function TaskBoardClient({
           </div>
         </div>
       ) : null}
+
+      {claimTask ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-semibold tracking-normal">
+              Claim this bounty?
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              You are claiming <strong>{claimTask.title}</strong>. Its details
+              will lock until the task completes or is rejected and reopened.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                disabled={busyAction === `claim_task-${claimTask.id}`}
+                onClick={() => setClaimTask(null)}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={busyAction === `claim_task-${claimTask.id}`}
+                onClick={confirmClaim}
+              >
+                {busyAction === `claim_task-${claimTask.id}` ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Clock />
+                )}
+                Claim bounty
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {detailTask ? (
+        <TaskDetailModal
+          members={members}
+          onClose={() => setDetailTask(null)}
+          task={detailTask}
+          votes={votesByTask.get(detailTask.id) ?? []}
+        />
+      ) : null}
     </div>
   );
+}
+
+function getTaskSaveErrorMessage(message: string) {
+  if (message.includes("tasks_title_check")) {
+    return "Task titles must be between 2 and 160 characters.";
+  }
+
+  if (message.includes("tasks_category_check")) {
+    return "Categories must be between 2 and 80 characters.";
+  }
+
+  if (message.includes("tasks_weight_check")) {
+    return "Weight must be a whole number from 1 to 100.";
+  }
+
+  if (message.includes("tasks_description_check")) {
+    return "Task descriptions must be 1,000 characters or fewer.";
+  }
+
+  if (
+    message.includes("row-level security") ||
+    message.includes("permission denied")
+  ) {
+    return "You do not have permission to create or edit tasks in this workspace.";
+  }
+
+  return "Some task details are invalid. Review the fields and try again.";
 }
 
 function StatCard({
@@ -457,21 +611,22 @@ function TaskActions({
   canEdit,
   currentUserId,
   hasCurrentUserVoted,
-  isFailed,
+  onClaim,
   onDelete,
+  onDetails,
   onDrop,
   onEdit,
   onReopen,
   onRpc,
   task,
 }: {
-  approvalsNeeded: number;
   busyAction: string | null;
   canEdit: boolean;
   currentUserId: string;
   hasCurrentUserVoted: boolean;
-  isFailed: boolean;
+  onClaim: () => void;
   onDelete: () => void;
+  onDetails: () => void;
   onDrop: () => void;
   onEdit: () => void;
   onReopen: () => void;
@@ -492,7 +647,7 @@ function TaskActions({
   if (task.status === "open") {
     return (
       <>
-        <Button size="sm" onClick={() => onRpc("claim_task")}>
+        <Button size="sm" onClick={onClaim}>
           <Clock aria-hidden="true" />
           Claim
         </Button>
@@ -508,35 +663,30 @@ function TaskActions({
             </Button>
           </>
         ) : null}
+        <Button size="sm" variant="ghost" onClick={onDetails}>
+          <Eye aria-hidden="true" />
+          Details
+        </Button>
       </>
     );
   }
 
   if (task.status === "claimed" && task.claimed_by === currentUserId) {
     return (
-      <Button size="sm" onClick={() => onRpc("submit_task_for_approval")}>
-        <Check aria-hidden="true" />
-        Submit
-      </Button>
+      <>
+        <Button size="sm" onClick={() => onRpc("submit_task_for_approval")}>
+          <Check aria-hidden="true" />
+          Submit
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onDetails}>
+          <Eye aria-hidden="true" />
+          Details
+        </Button>
+      </>
     );
   }
 
   if (task.status === "pending_approval") {
-    if (isFailed && canEdit) {
-      return (
-        <>
-          <Button size="sm" variant="outline" onClick={onReopen}>
-            <RotateCcw aria-hidden="true" />
-            Reopen
-          </Button>
-          <Button size="sm" variant="outline" onClick={onDrop}>
-            <X aria-hidden="true" />
-            Drop
-          </Button>
-        </>
-      );
-    }
-
     if (task.claimed_by !== currentUserId && !hasCurrentUserVoted) {
       return (
         <>
@@ -555,14 +705,183 @@ function TaskActions({
             <ThumbsDown aria-hidden="true" />
             Reject
           </Button>
+          <Button size="sm" variant="ghost" onClick={onDetails}>
+            <Eye aria-hidden="true" />
+            Details
+          </Button>
         </>
       );
     }
 
-    return <span className="text-sm text-muted-foreground">Waiting votes</span>;
+    return (
+      <>
+        <span className="text-sm text-muted-foreground">Waiting votes</span>
+        <Button size="sm" variant="ghost" onClick={onDetails}>
+          <Eye aria-hidden="true" />
+          Details
+        </Button>
+      </>
+    );
   }
 
-  return <span className="text-sm text-muted-foreground">No action</span>;
+  if (task.status === "rejected") {
+    if (canEdit) {
+      return (
+        <>
+          <Button size="sm" variant="outline" onClick={onReopen}>
+            <RotateCcw aria-hidden="true" />
+            Reopen
+          </Button>
+          <Button size="sm" variant="outline" onClick={onDrop}>
+            <X aria-hidden="true" />
+            Close
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onDetails}>
+            <Eye aria-hidden="true" />
+            Details
+          </Button>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <span className="flex items-center gap-2 text-sm text-rose-700">
+          <AlertTriangle aria-hidden="true" className="size-4" />
+          Awaiting decision
+        </span>
+        <Button size="sm" variant="ghost" onClick={onDetails}>
+          <Eye aria-hidden="true" />
+          Details
+        </Button>
+      </>
+    );
+  }
+
+  return (
+    <Button size="sm" variant="ghost" onClick={onDetails}>
+      <Eye aria-hidden="true" />
+      Details
+    </Button>
+  );
+}
+
+function TaskDetailModal({
+  members,
+  onClose,
+  task,
+  votes,
+}: {
+  members: WorkspaceMember[];
+  onClose: () => void;
+  task: Task;
+  votes: TaskVote[];
+}) {
+  const claimant = members.find((member) => member.user_id === task.claimed_by);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 px-4 py-8 backdrop-blur-sm">
+      <div className="w-full max-w-2xl rounded-lg border bg-white p-6 shadow-xl">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-muted-foreground">
+              {task.task_code} - {task.category}
+            </p>
+            <h2 className="mt-1 break-words text-xl font-semibold tracking-normal">
+              {task.title}
+            </h2>
+          </div>
+          <span
+            className={cn(
+              "shrink-0 rounded-full px-3 py-1 text-xs font-medium",
+              statusTone[task.status],
+            )}
+          >
+            {statusLabel(task.status)}
+          </span>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-4 rounded-md border bg-secondary/30 p-4 text-sm">
+          <div>
+            <p className="text-xs text-muted-foreground">Assignee</p>
+            <div className="mt-2 flex items-center gap-2 font-medium">
+              {claimant ? (
+                <UserAvatar className="size-7" profile={claimant.profiles} />
+              ) : null}
+              {claimant ? displayName(claimant.profiles) : "Unassigned"}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Weight</p>
+            <p className="mt-2 font-medium text-primary">{task.weight} pts</p>
+          </div>
+        </div>
+
+        <section className="mt-5">
+          <h3 className="text-sm font-medium">Description</h3>
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">
+            {task.description || "No description provided."}
+          </p>
+        </section>
+
+        <section className="mt-6">
+          <h3 className="text-sm font-medium">Peer votes</h3>
+          {votes.length ? (
+            <div className="mt-3 overflow-hidden rounded-md border">
+              {votes.map((vote) => {
+                const voter = members.find(
+                  (member) => member.user_id === vote.voter_id,
+                );
+                const approved = vote.vote === "approve";
+
+                return (
+                  <div
+                    className="flex items-center justify-between gap-4 border-b px-4 py-3 last:border-b-0"
+                    key={vote.id}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <UserAvatar
+                        className="size-8"
+                        profile={voter?.profiles}
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">
+                          {displayName(voter?.profiles)}
+                        </p>
+                        {vote.comment ? (
+                          <p className="mt-0.5 break-words text-xs text-muted-foreground">
+                            {vote.comment}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-1 text-xs font-medium",
+                        approved
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-rose-100 text-rose-700",
+                      )}
+                    >
+                      {approved ? "Approved" : "Rejected"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">
+              No peer votes have been cast.
+            </p>
+          )}
+        </section>
+
+        <div className="mt-6 flex justify-end">
+          <Button onClick={onClose}>Close</Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function EmptyTasks({

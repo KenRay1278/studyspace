@@ -4,6 +4,7 @@ export type TaskStatus =
   | "open"
   | "claimed"
   | "pending_approval"
+  | "rejected"
   | "verified"
   | "dropped";
 

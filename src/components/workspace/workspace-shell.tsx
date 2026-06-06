@@ -5,13 +5,14 @@ import {
   ClipboardList,
   FileText,
   Folder,
-  Settings,
   Users,
 } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { InviteCodeButton } from "@/components/workspace/invite-code-button";
 import { MemberManagement } from "@/components/workspace/member-management";
-import { displayName, initials, roleLabel } from "@/lib/format";
+import { displayName, roleLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Profile, Workspace, WorkspaceMember, WorkspaceRole } from "@/lib/types";
 
@@ -103,9 +104,7 @@ export function WorkspaceShell({
           </nav>
 
           <div className="mt-auto flex items-center gap-3 border-t px-4 py-4">
-            <div className="flex size-9 items-center justify-center rounded-full bg-violet-200 text-xs font-semibold text-violet-700">
-              {initials(displayName(profile))}
-            </div>
+            <UserAvatar className="size-9" profile={profile} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
                 {displayName(profile)}
@@ -126,12 +125,9 @@ export function WorkspaceShell({
               <span className="font-medium">{workspace.name}</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Settings aria-hidden="true" className="size-4" />
-                Invite code:{" "}
-                <span className="font-mono font-medium text-foreground">
-                  {workspace.invite_code}
-                </span>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <span>Invite code:</span>
+                <InviteCodeButton code={workspace.invite_code} />
               </div>
               <MemberManagement
                 currentUserId={currentUserId}
