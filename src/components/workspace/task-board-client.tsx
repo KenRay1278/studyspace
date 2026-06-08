@@ -7,7 +7,6 @@ import {
   Check,
   Clock,
   Edit3,
-  Eye,
   Loader2,
   Plus,
   RotateCcw,
@@ -352,16 +351,21 @@ export function TaskBoardClient({
                   key={task.id}
                 >
                   <div className="min-w-0 pr-5">
-                    <button
-                      className="max-w-full text-left font-medium hover:underline"
-                      onClick={() => setDetailTask(task)}
-                      type="button"
-                    >
-                      <span className="block truncate">{task.title}</span>
-                    </button>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <button
+                        className="min-w-0 text-left font-medium hover:underline"
+                        onClick={() => setDetailTask(task)}
+                        title="Open task details"
+                        type="button"
+                      >
+                        <span className="block truncate">{task.title}</span>
+                      </button>
+                      <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                        {task.category}
+                      </span>
+                    </div>
                     <p className="mt-1 line-clamp-2 break-all text-sm text-muted-foreground">
-                      #{task.task_code} - {task.category}
-                      {task.description ? ` - ${task.description}` : ""}
+                      {task.description || "No description provided."}
                     </p>
                     {task.status === "pending_approval" ||
                     task.status === "rejected" ? (
@@ -399,7 +403,6 @@ export function TaskBoardClient({
                       hasCurrentUserVoted={hasCurrentUserVoted}
                       onDelete={() => deleteTask(task)}
                       onDrop={() => rpcTask("drop_failed_task", task.id)}
-                      onDetails={() => setDetailTask(task)}
                       onEdit={() => openEditModal(task)}
                       onClaim={() => setClaimTask(task)}
                       onReopen={() => rpcTask("reopen_failed_task", task.id)}
@@ -613,7 +616,6 @@ function TaskActions({
   hasCurrentUserVoted,
   onClaim,
   onDelete,
-  onDetails,
   onDrop,
   onEdit,
   onReopen,
@@ -626,7 +628,6 @@ function TaskActions({
   hasCurrentUserVoted: boolean;
   onClaim: () => void;
   onDelete: () => void;
-  onDetails: () => void;
   onDrop: () => void;
   onEdit: () => void;
   onReopen: () => void;
@@ -663,10 +664,6 @@ function TaskActions({
             </Button>
           </>
         ) : null}
-        <Button size="sm" variant="ghost" onClick={onDetails}>
-          <Eye aria-hidden="true" />
-          Details
-        </Button>
       </>
     );
   }
@@ -677,10 +674,6 @@ function TaskActions({
         <Button size="sm" onClick={() => onRpc("submit_task_for_approval")}>
           <Check aria-hidden="true" />
           Submit
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onDetails}>
-          <Eye aria-hidden="true" />
-          Details
         </Button>
       </>
     );
@@ -705,22 +698,12 @@ function TaskActions({
             <ThumbsDown aria-hidden="true" />
             Reject
           </Button>
-          <Button size="sm" variant="ghost" onClick={onDetails}>
-            <Eye aria-hidden="true" />
-            Details
-          </Button>
         </>
       );
     }
 
     return (
-      <>
-        <span className="text-sm text-muted-foreground">Waiting votes</span>
-        <Button size="sm" variant="ghost" onClick={onDetails}>
-          <Eye aria-hidden="true" />
-          Details
-        </Button>
-      </>
+      <span className="text-sm text-muted-foreground">Waiting votes</span>
     );
   }
 
@@ -736,34 +719,19 @@ function TaskActions({
             <X aria-hidden="true" />
             Close
           </Button>
-          <Button size="sm" variant="ghost" onClick={onDetails}>
-            <Eye aria-hidden="true" />
-            Details
-          </Button>
         </>
       );
     }
 
     return (
-      <>
-        <span className="flex items-center gap-2 text-sm text-rose-700">
-          <AlertTriangle aria-hidden="true" className="size-4" />
-          Awaiting decision
-        </span>
-        <Button size="sm" variant="ghost" onClick={onDetails}>
-          <Eye aria-hidden="true" />
-          Details
-        </Button>
-      </>
+      <span className="flex items-center gap-2 text-sm text-rose-700">
+        <AlertTriangle aria-hidden="true" className="size-4" />
+        Awaiting decision
+      </span>
     );
   }
 
-  return (
-    <Button size="sm" variant="ghost" onClick={onDetails}>
-      <Eye aria-hidden="true" />
-      Details
-    </Button>
-  );
+  return <span className="text-sm text-muted-foreground">No action</span>;
 }
 
 function TaskDetailModal({
@@ -784,9 +752,9 @@ function TaskDetailModal({
       <div className="w-full max-w-2xl rounded-lg border bg-white p-6 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-xs font-medium text-muted-foreground">
-              {task.task_code} - {task.category}
-            </p>
+            <span className="w-fit rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground">
+              {task.category}
+            </span>
             <h2 className="mt-1 break-words text-xl font-semibold tracking-normal">
               {task.title}
             </h2>
