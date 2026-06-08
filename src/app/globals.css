@@ -82,3 +82,44 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  [data-print-template],
+  [data-print-template] * {
+    visibility: visible !important;
+  }
+
+  [data-print-template] {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .print-template {
+    break-inside: avoid;
+  }
+
+  .print-summary,
+  .print-template section,
+  .print-template .rounded-lg {
+    break-inside: avoid;
+  }
+}

@@ -11,6 +11,10 @@ type ProofOfWorkPageProps = {
 export default async function ProofOfWorkPage({ params }: ProofOfWorkPageProps) {
   const { workspaceId } = await params;
   const bundle = await getWorkspaceBundle(workspaceId);
+  const generatedAt = new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date());
 
   return (
     <WorkspaceShell
@@ -20,6 +24,7 @@ export default async function ProofOfWorkPage({ params }: ProofOfWorkPageProps) 
       workspace={bundle.workspace}
     >
       <ProofOfWorkView
+        generatedAt={generatedAt}
         ledger={bundle.ledger}
         members={bundle.members}
         workspace={bundle.workspace}

@@ -8,12 +8,14 @@ import { displayName, formatDate } from "@/lib/format";
 import type { LedgerEntry, Workspace, WorkspaceMember } from "@/lib/types";
 
 type ProofOfWorkViewProps = {
+  generatedAt: string;
   ledger: LedgerEntry[];
   members: WorkspaceMember[];
   workspace: Workspace;
 };
 
 export function ProofOfWorkView({
+  generatedAt,
   ledger,
   members,
   workspace,
@@ -34,14 +36,14 @@ export function ProofOfWorkView({
   });
 
   return (
-    <div className="mx-auto w-full max-w-[1680px] px-8 py-7">
+    <div className="mx-auto w-full max-w-[1680px] px-8 py-7 print-template-page">
       <div className="mb-6 flex items-center justify-between print:hidden">
         <div>
           <h1 className="text-2xl font-semibold tracking-normal">
             Proof of work export
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Browser print can save this view as PDF.
+            The PDF export prints only the lecturer-readable receipt below.
           </p>
         </div>
         <Button onClick={() => window.print()}>
@@ -50,19 +52,32 @@ export function ProofOfWorkView({
         </Button>
       </div>
 
-      <section className="mx-auto max-w-6xl rounded-xl border-4 border-primary bg-[#f7f4ff] p-8 print:border print:bg-white print:p-5">
+      <section
+        className="mx-auto max-w-6xl rounded-xl border-4 border-primary bg-[#f7f4ff] p-8 print-template print:border print:bg-white print:p-0"
+        data-print-template
+      >
         <div className="flex items-start justify-between gap-6">
           <div>
             <p className="text-2xl font-semibold tracking-normal">
               StudySpace
             </p>
             <p className="text-sm text-muted-foreground">
-              Contribution Ledger · {workspace.name}
+              Contribution Ledger - {workspace.name}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {generatedAt ? `Generated on ${generatedAt}` : "Generated export"}
             </p>
           </div>
           <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
-            {ledger.length} tasks verified · immutable
+            {ledger.length} tasks verified - immutable
           </span>
+        </div>
+
+        <div className="mt-6 grid grid-cols-4 gap-3 rounded-lg border bg-white p-4 text-sm print-summary">
+          <SummaryItem label="Workspace" value={workspace.name} />
+          <SummaryItem label="Members" value={String(members.length)} />
+          <SummaryItem label="Verified tasks" value={String(ledger.length)} />
+          <SummaryItem label="Verified weight" value={`${totalWeight} pts`} />
         </div>
 
         {ledger.length === 0 ? (
@@ -76,8 +91,11 @@ export function ProofOfWorkView({
           </div>
         ) : (
           <>
-            <div className="mt-8 grid grid-cols-3 gap-4">
-              <ProofCard label="Total weight earned" value={`${totalWeight} pts`} />
+            <div className="mt-6 grid grid-cols-3 gap-4">
+              <ProofCard
+                label="Total weight earned"
+                value={`${totalWeight} pts`}
+              />
               <ProofCard label="Verified tasks" value={String(ledger.length)} />
               <ProofCard
                 label="Active members"
@@ -86,7 +104,7 @@ export function ProofOfWorkView({
             </div>
 
             <div className="mt-6 grid grid-cols-[1fr_1fr] gap-4">
-              <div className="rounded-lg border bg-white p-5">
+              <section className="rounded-lg border bg-white p-5">
                 <h2 className="font-medium">Member Breakdown</h2>
                 <div className="mt-5 space-y-4">
                   {members.map((member) => {
@@ -101,13 +119,13 @@ export function ProofOfWorkView({
                         <div className="mb-2 flex items-center justify-between text-sm">
                           <span className="flex items-center gap-2 font-medium">
                             <UserAvatar
-                              className="size-7"
+                              className="size-7 print:hidden"
                               profile={member.profiles}
                             />
                             {name}
                           </span>
                           <span>
-                            {total} pts · {percent}%
+                            {total} pts - {percent}%
                           </span>
                         </div>
                         <div className="h-2 rounded-full bg-secondary">
@@ -120,9 +138,9 @@ export function ProofOfWorkView({
                     );
                   })}
                 </div>
-              </div>
+              </section>
 
-              <div className="rounded-lg border bg-white p-5">
+              <section className="rounded-lg border bg-white p-5">
                 <h2 className="font-medium">Task Weight by Category</h2>
                 <div className="mt-5 space-y-4">
                   {[...totalsByCategory.entries()].map(([category, total]) => {
@@ -135,7 +153,7 @@ export function ProofOfWorkView({
                         <div className="mb-2 flex items-center justify-between text-sm">
                           <span className="font-medium">{category}</span>
                           <span>
-                            {total} pts · {percent}%
+                            {total} pts - {percent}%
                           </span>
                         </div>
                         <div className="h-2 rounded-full bg-secondary">
@@ -148,17 +166,17 @@ export function ProofOfWorkView({
                     );
                   })}
                 </div>
-              </div>
+              </section>
             </div>
 
-            <div className="mt-6 overflow-x-auto rounded-lg border bg-white">
+            <section className="mt-6 overflow-x-auto rounded-lg border bg-white">
               <div className="border-b px-5 py-4">
                 <h2 className="font-medium">Work Detail Receipt</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Individual task breakdown for verified work
                 </p>
               </div>
-              <div className="grid min-w-[1000px] grid-cols-[140px_1fr_150px_170px_100px] border-b bg-secondary/50 px-5 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="grid min-w-[1000px] grid-cols-[140px_1fr_150px_170px_100px] border-b bg-secondary/50 px-5 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground print:min-w-0">
                 <span>Verified</span>
                 <span>Task</span>
                 <span>Category</span>
@@ -172,7 +190,7 @@ export function ProofOfWorkView({
 
                 return (
                   <div
-                    className="grid min-w-[1000px] grid-cols-[140px_1fr_150px_170px_100px] border-b px-5 py-4 text-sm last:border-b-0"
+                    className="grid min-w-[1000px] grid-cols-[140px_1fr_150px_170px_100px] border-b px-5 py-4 text-sm last:border-b-0 print:min-w-0"
                     key={entry.id}
                   >
                     <span>{formatDate(entry.verified_at)}</span>
@@ -185,10 +203,26 @@ export function ProofOfWorkView({
                   </div>
                 );
               })}
-            </div>
+            </section>
           </>
         )}
+
+        <div className="mt-6 flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
+          <span>Generated by StudySpace</span>
+          <span>Verified ledger data only</span>
+        </div>
       </section>
+    </div>
+  );
+}
+
+function SummaryItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 truncate font-semibold">{value}</p>
     </div>
   );
 }
