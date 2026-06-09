@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Folder, Loader2, LogIn, Plus, Search } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { StudySpaceLogo } from "@/components/brand/studyspace-logo";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { displayName, roleLabel } from "@/lib/format";
@@ -139,22 +140,14 @@ export function ProjectDashboard({
       <div className="flex min-h-dvh">
         <aside className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col border-r bg-white">
           <div className="flex items-center gap-3 border-b px-5 py-5">
-            <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              SS
-            </div>
-            <div>
-              <p className="font-semibold">StudySpace</p>
-              <p className="text-xs text-muted-foreground">
-                Contribution ledger
-              </p>
-            </div>
+            <StudySpaceLogo />
           </div>
 
           <nav className="space-y-2 px-3 py-5 text-sm">
             <p className="px-3 text-xs font-medium text-muted-foreground">
               Workspace
             </p>
-            <div className="rounded-md bg-secondary px-3 py-2 font-medium">
+            <div className="rounded-md bg-[#f0eefb] px-3 py-2 font-medium text-[#493daf]">
               Projects
             </div>
           </nav>
@@ -227,7 +220,10 @@ export function ProjectDashboard({
                     key={workspace.id}
                   >
                     <div className="flex items-center gap-4">
-                      <Folder aria-hidden="true" className="size-9" />
+                      <Folder
+                        aria-hidden="true"
+                        className="size-9 text-[#5b4fc4]"
+                      />
                       <div>
                         <p className="font-medium">{workspace.name}</p>
                         <p className="text-sm text-muted-foreground">
@@ -353,7 +349,9 @@ export function ProjectDashboard({
 function EmptyProjects({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="mt-10 flex min-h-[420px] flex-col items-center justify-center rounded-lg border border-dashed bg-white px-6 text-center">
-      <Folder aria-hidden="true" className="size-12 text-muted-foreground" />
+      <span className="flex size-16 items-center justify-center rounded-lg bg-[#f0eefb] text-[#5b4fc4]">
+        <Folder aria-hidden="true" className="size-8" />
+      </span>
       <h2 className="mt-4 text-xl font-semibold tracking-normal">
         No projects yet
       </h2>

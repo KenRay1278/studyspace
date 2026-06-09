@@ -1,17 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import {
-  BookOpen,
-  ClipboardList,
-  FileText,
-  Folder,
-  Users,
-} from "lucide-react";
+import { ClipboardList, FileText, Folder, Users } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { StudySpaceLogo } from "@/components/brand/studyspace-logo";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { InviteCodeButton } from "@/components/workspace/invite-code-button";
 import { MemberManagement } from "@/components/workspace/member-management";
+import { WorkspaceSettings } from "@/components/workspace/workspace-settings";
 import { displayName, roleLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Profile, Workspace, WorkspaceMember, WorkspaceRole } from "@/lib/types";
@@ -61,23 +57,15 @@ export function WorkspaceShell({
       <div className="flex min-h-dvh">
         <aside className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col border-r bg-white">
           <Link className="flex items-center gap-3 border-b px-5 py-5" href="/">
-            <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <BookOpen aria-hidden="true" />
-            </div>
-            <div>
-              <p className="font-semibold">StudySpace</p>
-              <p className="text-xs text-muted-foreground">
-                Contribution ledger
-              </p>
-            </div>
+            <StudySpaceLogo />
           </Link>
 
           <div className="border-b px-4 py-4">
             <p className="text-xs font-medium text-muted-foreground">
               Workspace
             </p>
-            <div className="mt-2 flex items-center gap-2 rounded-md border bg-secondary/60 px-3 py-2 text-sm font-medium">
-              <Folder aria-hidden="true" className="size-4" />
+            <div className="mt-2 flex items-center gap-2 rounded-md border border-[#dcd7f5] bg-[#f7f6fd] px-3 py-2 text-sm font-medium">
+              <Folder aria-hidden="true" className="size-4 text-[#5b4fc4]" />
               <span className="truncate">{workspace.name}</span>
             </div>
           </div>
@@ -91,7 +79,7 @@ export function WorkspaceShell({
                 <Link
                   className={cn(
                     "flex items-center gap-2 rounded-md px-3 py-2 transition hover:bg-secondary",
-                    isActive && "bg-violet-50 text-primary",
+                    isActive && "bg-primary text-primary-foreground",
                   )}
                   href={`/workspaces/${workspace.id}/${item.href}`}
                   key={item.key}
@@ -133,6 +121,10 @@ export function WorkspaceShell({
                 currentUserId={currentUserId}
                 currentUserRole={role}
                 members={members}
+                workspace={workspace}
+              />
+              <WorkspaceSettings
+                currentUserRole={role}
                 workspace={workspace}
               />
             </div>

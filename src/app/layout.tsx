@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "StudySpace",
-  description: "Group task management with weighted bounty workflows.",
+  description:
+    "Shared work, visible effort, and fair credit for academic teams.",
 };
 
 export default function RootLayout({

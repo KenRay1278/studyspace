@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { BookOpen, CheckCircle2, Users } from "lucide-react";
+import { BarChart3, BookOpen, Layers3, Users } from "lucide-react";
 
 import { AuthButtons } from "@/components/auth/auth-buttons";
+import { StudySpaceLogo } from "@/components/brand/studyspace-logo";
 import { ProjectDashboard } from "@/components/dashboard/project-dashboard";
 import { getDashboardData, getSessionUser } from "@/lib/supabase/data";
 
@@ -33,69 +34,68 @@ export default async function Home({ searchParams }: HomeProps) {
   }
 
   return (
-    <main className="grid min-h-dvh grid-cols-[minmax(520px,1fr)_minmax(520px,1.05fr)] bg-[#f4f1eb]">
-      <section className="flex flex-col justify-between px-16 py-14">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-              <BookOpen aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold tracking-normal">
-                StudySpace
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Contribution ledger for academic teams
-              </p>
-            </div>
-          </div>
+    <main className="grid min-h-dvh grid-cols-[44%_56%] bg-white">
+      <section className="flex min-h-dvh flex-col px-14 py-10 xl:px-20 xl:py-14 [@media(max-height:760px)]:px-12 [@media(max-height:760px)]:py-7">
+        <StudySpaceLogo
+          iconClassName="bg-[#5b4fc4] text-white shadow-[0_8px_20px_rgba(91,79,196,0.24)]"
+        />
 
-          <div className="mt-16 max-w-xl">
-            <h1 className="text-5xl font-semibold tracking-normal">
-              Track every contribution, together.
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-muted-foreground">
-              Create weighted task bounties, verify finished work through peer
-              consensus, and export a lecturer-readable proof-of-work summary.
-            </p>
-          </div>
+        <div className="my-auto max-w-xl py-8 [@media(max-height:760px)]:py-5">
+          <h1 className="text-5xl font-semibold leading-[1.08] tracking-normal [@media(max-height:760px)]:text-4xl">
+            Track every contribution,{" "}
+            <span className="text-[#5b4fc4]">together.</span>
+          </h1>
+          <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground [@media(max-height:760px)]:mt-3">
+            Shared work, visible effort, and fair credit for every academic
+            team.
+          </p>
 
-          <div className="mt-10 space-y-4">
+          <div className="mt-8 space-y-3 [@media(max-height:760px)]:mt-5 [@media(max-height:760px)]:space-y-2">
             <Feature
-              icon={<CheckCircle2 aria-hidden="true" />}
-              text="Peer-approved task verification"
-              title="Weighted Bounties"
+              icon={<Layers3 aria-hidden="true" />}
+              text="Create weighted tasks and keep responsibilities clear."
+              title="Track Contributions"
             />
             <Feature
               icon={<Users aria-hidden="true" />}
-              text="Clear project roles for owners, editors, and members"
-              title="Group Accountability"
+              text="Claim work, submit results, and verify progress as a team."
+              title="Team Collaboration"
             />
             <Feature
-              icon={<BookOpen aria-hidden="true" />}
-              text="Verified ledger data ready for proof-of-work reports"
-              title="Lecturer Readability"
+              icon={<BarChart3 aria-hidden="true" />}
+              text="Turn verified work into a lecturer-readable report."
+              title="Proof of Contribution"
             />
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          GitHub contribution automation is planned after the MVP.
+        <p className="text-xs text-muted-foreground">
+          Weighted tasks, peer verification, and clear contribution records.
         </p>
       </section>
 
-      <section className="flex items-center justify-center bg-[linear-gradient(135deg,#211062,#6f63d6)] px-12">
-        <div className="w-full max-w-xl rounded-xl bg-white px-12 py-14 text-center shadow-2xl">
-          <div className="mx-auto flex size-16 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <BookOpen aria-hidden="true" />
+      <section className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#5b4fc4] px-12 py-10">
+        <div className="absolute -left-28 top-[34%] size-72 rounded-full border border-white/10" />
+        <div className="absolute -left-20 top-[39%] size-56 rounded-full border border-white/10" />
+        <div className="absolute -right-24 -top-24 size-72 rounded-full border border-white/10" />
+
+        <div className="relative w-full max-w-lg rounded-lg bg-white px-12 py-12 text-center shadow-[0_24px_60px_rgba(30,18,92,0.28)] [@media(max-height:760px)]:max-w-md [@media(max-height:760px)]:px-10 [@media(max-height:760px)]:py-8">
+          <div className="mx-auto flex size-14 items-center justify-center rounded-lg bg-[#5b4fc4] text-white shadow-[0_8px_20px_rgba(91,79,196,0.24)]">
+            <BookOpen aria-hidden="true" className="size-6" />
           </div>
-          <h2 className="mt-7 text-2xl font-semibold tracking-normal">
+          <p className="mt-5 text-xl font-semibold">StudySpace</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Contribution ledger
+          </p>
+
+          <h2 className="mt-8 text-2xl font-semibold [@media(max-height:760px)]:mt-6">
             Welcome back
           </h2>
-          <p className="mt-2 text-muted-foreground">
-            Sign in to access your contribution ledger.
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sign in to access your workspace.
           </p>
-          <div className="mt-8 flex justify-center">
+
+          <div className="mt-7">
             <AuthButtons nextPath={join ? `/join/${join}` : "/"} />
           </div>
         </div>
@@ -114,14 +114,16 @@ function Feature({
   title: string;
 }) {
   return (
-    <div className="flex max-w-lg gap-4 rounded-lg border bg-white p-5 shadow-sm">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-violet-50 text-primary">
+    <div className="flex max-w-lg items-center gap-4 rounded-lg border border-black/8 bg-white px-4 py-3.5 shadow-sm [@media(max-height:760px)]:py-2.5">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#f0eefb] text-[#5b4fc4] [&>svg]:size-5">
         {icon}
-      </div>
-      <div>
-        <p className="font-medium">{title}</p>
-        <p className="mt-1 text-sm leading-6 text-muted-foreground">{text}</p>
-      </div>
+      </span>
+      <span>
+        <span className="block text-sm font-medium">{title}</span>
+        <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+          {text}
+        </span>
+      </span>
     </div>
   );
 }

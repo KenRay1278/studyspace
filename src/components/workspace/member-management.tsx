@@ -7,8 +7,6 @@ import {
   Copy,
   Crown,
   Loader2,
-  LogOut,
-  Trash2,
   Users,
 } from "lucide-react";
 
@@ -41,11 +39,6 @@ export function MemberManagement({
   const [transferTarget, setTransferTarget] =
     useState<WorkspaceMember | null>(null);
   const [isTransferring, setIsTransferring] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [deleteConfirmation, setDeleteConfirmation] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isLeaveOpen, setIsLeaveOpen] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
   const canManageRoles = currentUserRole === "owner";
 
   const inviteLink = useMemo(() => {
@@ -104,49 +97,6 @@ export function MemberManagement({
     }
 
     setTransferTarget(null);
-    router.refresh();
-  }
-
-  async function deleteWorkspace() {
-    setIsDeleting(true);
-    setError(null);
-
-    const supabase = createSupabaseBrowserClient();
-    const { error: deleteError } = await supabase.rpc("delete_workspace", {
-      p_confirmation_name: deleteConfirmation,
-      p_workspace_id: workspace.id,
-    });
-
-    setIsDeleting(false);
-
-    if (deleteError) {
-      setError(deleteError.message);
-      setIsDeleteOpen(false);
-      return;
-    }
-
-    router.push("/");
-    router.refresh();
-  }
-
-  async function leaveWorkspace() {
-    setIsLeaving(true);
-    setError(null);
-
-    const supabase = createSupabaseBrowserClient();
-    const { error: leaveError } = await supabase.rpc("leave_workspace", {
-      p_workspace_id: workspace.id,
-    });
-
-    setIsLeaving(false);
-
-    if (leaveError) {
-      setError(leaveError.message);
-      setIsLeaveOpen(false);
-      return;
-    }
-
-    router.push("/");
     router.refresh();
   }
 
@@ -262,87 +212,8 @@ export function MemberManagement({
               })}
             </div>
 
-            <div className="mt-6 space-y-5 border-t pt-5">
-              <div className="flex items-center justify-between gap-5">
-                <div>
-                  <p className="text-sm font-medium">Leave workspace</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {canManageRoles
-                      ? "Transfer ownership to another member before leaving."
-                      : "Remove yourself from this workspace."}
-                  </p>
-                </div>
-                <Button
-                  disabled={canManageRoles}
-                  onClick={() => setIsLeaveOpen(true)}
-                  variant="outline"
-                >
-                  <LogOut aria-hidden="true" />
-                  {canManageRoles ? "Owner cannot leave" : "Leave"}
-                </Button>
-              </div>
-
-              {canManageRoles ? (
-                <div className="flex items-center justify-between gap-5 border-t pt-5">
-                  <div>
-                    <p className="text-sm font-medium">Delete workspace</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Permanently removes its tasks, votes, and contribution
-                      data.
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setDeleteConfirmation("");
-                      setIsDeleteOpen(true);
-                    }}
-                    variant="destructive"
-                  >
-                    <Trash2 aria-hidden="true" />
-                    Delete
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-
             <div className="mt-6 flex justify-end">
               <Button onClick={() => setIsOpen(false)}>Done</Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {isLeaveOpen ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-xl">
-            <h2 className="text-xl font-semibold tracking-normal">
-              Leave workspace?
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              You will lose access to{" "}
-              <strong className="text-foreground">{workspace.name}</strong>.
-              Verified contribution records stay in the workspace ledger.
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <Button
-                disabled={isLeaving}
-                onClick={() => setIsLeaveOpen(false)}
-                variant="outline"
-              >
-                Cancel
-              </Button>
-              <Button
-                disabled={isLeaving}
-                onClick={leaveWorkspace}
-                variant="destructive"
-              >
-                {isLeaving ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <LogOut />
-                )}
-                Leave workspace
-              </Button>
             </div>
           </div>
         </div>
@@ -379,49 +250,6 @@ export function MemberManagement({
         </div>
       ) : null}
 
-      {isDeleteOpen ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-xl">
-            <h2 className="text-xl font-semibold tracking-normal">
-              Delete workspace?
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              This cannot be undone. Enter{" "}
-              <strong className="text-foreground">{workspace.name}</strong> to
-              confirm.
-            </p>
-            <input
-              className="mt-5 h-10 w-full rounded-md border px-3 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20"
-              onChange={(event) => setDeleteConfirmation(event.target.value)}
-              placeholder={workspace.name}
-              value={deleteConfirmation}
-            />
-            <div className="mt-6 flex justify-end gap-3">
-              <Button
-                disabled={isDeleting}
-                onClick={() => setIsDeleteOpen(false)}
-                variant="outline"
-              >
-                Cancel
-              </Button>
-              <Button
-                disabled={
-                  isDeleting || deleteConfirmation.trim() !== workspace.name
-                }
-                onClick={deleteWorkspace}
-                variant="destructive"
-              >
-                {isDeleting ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <Trash2 />
-                )}
-                Delete permanently
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </>
   );
 }

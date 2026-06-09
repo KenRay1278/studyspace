@@ -312,7 +312,7 @@ export function TaskBoardClient({
         </div>
       ) : null}
 
-      <div className="mt-6 overflow-x-auto rounded-lg border bg-white">
+      <div className="mt-6 overflow-hidden rounded-lg border bg-white">
         <div className="border-b px-5 py-4">
           <p className="font-medium">Task Ledger ({tasks.length} Total)</p>
         </div>
@@ -321,7 +321,7 @@ export function TaskBoardClient({
           <EmptyTasks canEdit={canEdit} onCreate={openCreateModal} />
         ) : (
           <div>
-            <div className="grid min-w-[1240px] grid-cols-[minmax(0,1fr)_190px_170px_110px_320px] border-b bg-secondary/40 px-5 py-3 text-xs font-medium text-muted-foreground">
+            <div className="grid grid-cols-[minmax(220px,1.55fr)_minmax(120px,.8fr)_135px_75px_minmax(170px,1fr)] border-b bg-secondary/40 px-5 py-3 text-xs font-medium text-muted-foreground">
               <span>Bounty Name</span>
               <span>Assignee</span>
               <span>Status</span>
@@ -347,7 +347,7 @@ export function TaskBoardClient({
 
               return (
                 <div
-                  className="grid min-w-[1240px] grid-cols-[minmax(0,1fr)_190px_170px_110px_320px] items-center border-b px-5 py-4 last:border-b-0"
+                  className="grid grid-cols-[minmax(220px,1.55fr)_minmax(120px,.8fr)_135px_75px_minmax(170px,1fr)] items-center border-b px-5 py-4 last:border-b-0"
                   key={task.id}
                 >
                   <div className="min-w-0 pr-5">
@@ -375,14 +375,14 @@ export function TaskBoardClient({
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex min-w-0 items-center gap-2 pr-3 text-sm">
                     {assignee ? (
                       <UserAvatar
                         className="size-7"
                         profile={assignee.profiles}
                       />
                     ) : null}
-                    {assigneeName}
+                    <span className="truncate">{assigneeName}</span>
                   </div>
                   <span
                     className={cn(
@@ -395,7 +395,7 @@ export function TaskBoardClient({
                   <span className="font-medium text-primary">
                     {task.weight} pts
                   </span>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex min-w-0 flex-wrap gap-2">
                     <TaskActions
                       busyAction={busyAction}
                       canEdit={canEdit}
