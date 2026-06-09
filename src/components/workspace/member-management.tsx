@@ -17,6 +17,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Workspace, WorkspaceMember, WorkspaceRole } from "@/lib/types";
 
 type MemberManagementProps = {
+  iconOnly?: boolean;
   currentUserId: string;
   currentUserRole: WorkspaceRole;
   members: WorkspaceMember[];
@@ -26,6 +27,7 @@ type MemberManagementProps = {
 const roleOptions: WorkspaceRole[] = ["editor", "member"];
 
 export function MemberManagement({
+  iconOnly = false,
   currentUserId,
   currentUserRole,
   members,
@@ -104,13 +106,13 @@ export function MemberManagement({
     <>
       <Button size="sm" variant="outline" onClick={() => setIsOpen(true)}>
         <Users aria-hidden="true" />
-        Members
+        {iconOnly ? <span className="sr-only">Members</span> : "Members"}
       </Button>
 
       {isOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 px-4 py-8 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-lg border bg-white p-6 shadow-xl">
-            <div className="flex items-start justify-between gap-6">
+          <div className="w-full max-w-2xl rounded-lg border bg-white p-4 shadow-xl sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
               <div>
                 <h2 className="text-xl font-semibold tracking-normal">
                   Members
@@ -147,8 +149,8 @@ export function MemberManagement({
                 const isCurrentOwner = member.user_id === workspace.owner_id;
 
                 return (
-                  <div
-                    className="grid grid-cols-[1fr_250px] items-center gap-4 border-b px-4 py-3 last:border-b-0"
+                <div
+                    className="grid gap-3 border-b px-4 py-3 last:border-b-0 sm:grid-cols-[1fr_250px] sm:items-center sm:gap-4"
                     key={member.user_id}
                   >
                     <div className="flex min-w-0 items-center gap-3">
@@ -171,7 +173,7 @@ export function MemberManagement({
                           Owner
                         </span>
                       ) : (
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                           {isBusy ? (
                             <Loader2 className="size-4 animate-spin text-muted-foreground" />
                           ) : null}
@@ -221,7 +223,7 @@ export function MemberManagement({
 
       {transferTarget ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-lg border bg-white p-5 shadow-xl sm:p-6">
             <h2 className="text-xl font-semibold tracking-normal">
               Transfer ownership?
             </h2>
@@ -229,7 +231,7 @@ export function MemberManagement({
               {displayName(transferTarget.profiles)} will become the only owner.
               Your role will change to editor.
             </p>
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 disabled={isTransferring}
                 onClick={() => setTransferTarget(null)}

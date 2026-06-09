@@ -138,7 +138,7 @@ export function ProjectDashboard({
   return (
     <main className="min-h-dvh bg-[#efeee8]">
       <div className="flex min-h-dvh">
-        <aside className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col border-r bg-white">
+        <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-white lg:flex">
           <div className="flex items-center gap-3 border-b px-5 py-5">
             <StudySpaceLogo />
           </div>
@@ -164,8 +164,16 @@ export function ProjectDashboard({
           </div>
         </aside>
 
-        <section className="min-w-0 flex-1 px-10 py-8">
-          <div className="flex items-center justify-between gap-4">
+        <section className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
+          <div className="mb-6 flex items-center justify-between border-b pb-4 lg:hidden">
+            <StudySpaceLogo compact iconClassName="size-10" />
+            <div className="flex items-center gap-2">
+              <UserAvatar className="size-9" profile={profile} />
+              <SignOutButton />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
             <div>
               <h1 className="text-3xl font-semibold tracking-normal">
                 Projects
@@ -175,14 +183,14 @@ export function ProjectDashboard({
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <label className="relative">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
+              <label className="relative col-span-2 sm:col-span-1">
                 <Search
                   aria-hidden="true"
                   className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                 />
                 <input
-                  className="h-10 w-72 rounded-md border bg-white pl-9 pr-3 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  className="h-10 w-full rounded-md border bg-white pl-9 pr-3 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20 sm:w-72"
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search projects..."
                   value={query}
@@ -202,8 +210,8 @@ export function ProjectDashboard({
           {workspaces.length === 0 ? (
             <EmptyProjects onCreate={() => setIsModalOpen(true)} />
           ) : (
-            <div className="mt-10 overflow-x-auto rounded-lg border bg-white">
-              <div className="grid min-w-[900px] grid-cols-[1fr_160px_180px] border-b px-6 py-3 text-xs font-medium text-muted-foreground">
+            <div className="mt-7 overflow-hidden rounded-lg border bg-white lg:mt-10">
+              <div className="hidden grid-cols-[1fr_160px_180px] border-b px-6 py-3 text-xs font-medium text-muted-foreground lg:grid">
                 <span>Name</span>
                 <span>Role</span>
                 <span>Created</span>
@@ -215,18 +223,18 @@ export function ProjectDashboard({
 
                 return (
                   <Link
-                    className="grid min-w-[900px] grid-cols-[1fr_160px_180px] items-center border-b px-6 py-5 transition hover:bg-secondary/60 last:border-b-0"
+                    className="grid gap-3 border-b px-4 py-4 transition hover:bg-secondary/60 last:border-b-0 sm:grid-cols-[1fr_auto] sm:px-6 lg:grid-cols-[1fr_160px_180px] lg:items-center lg:gap-0 lg:py-5"
                     href={`/workspaces/${workspace.id}/tasks`}
                     key={workspace.id}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex min-w-0 items-center gap-4">
                       <Folder
                         aria-hidden="true"
                         className="size-9 text-[#5b4fc4]"
                       />
-                      <div>
-                        <p className="font-medium">{workspace.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{workspace.name}</p>
+                        <p className="line-clamp-2 break-words text-sm text-muted-foreground">
                           {workspace.description || "No description yet"}
                         </p>
                       </div>
@@ -234,7 +242,8 @@ export function ProjectDashboard({
                     <span className="w-fit rounded-md bg-violet-50 px-2 py-1 text-xs font-medium text-violet-700">
                       {roleLabel(role)}
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-xs text-muted-foreground sm:col-span-2 lg:col-span-1 lg:text-sm">
+                      <span className="lg:hidden">Created </span>
                       {new Intl.DateTimeFormat("en", {
                         month: "short",
                         day: "numeric",
@@ -250,7 +259,7 @@ export function ProjectDashboard({
 
       {isModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 px-4 py-8 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-lg border bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg rounded-lg border bg-white p-5 shadow-xl sm:p-6">
             <div>
               <h2 className="text-xl font-semibold tracking-normal">
                 Create project
@@ -283,7 +292,7 @@ export function ProjectDashboard({
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 disabled={isSaving}
                 onClick={() => setIsModalOpen(false)}
@@ -302,7 +311,7 @@ export function ProjectDashboard({
 
       {isJoinModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 px-4 py-8 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-lg border bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg rounded-lg border bg-white p-5 shadow-xl sm:p-6">
             <div>
               <h2 className="text-xl font-semibold tracking-normal">
                 Join project
@@ -326,7 +335,7 @@ export function ProjectDashboard({
               <p className="mt-4 text-sm text-destructive">{joinError}</p>
             ) : null}
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 disabled={isJoining}
                 onClick={() => setIsJoinModalOpen(false)}
@@ -348,7 +357,7 @@ export function ProjectDashboard({
 
 function EmptyProjects({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="mt-10 flex min-h-[420px] flex-col items-center justify-center rounded-lg border border-dashed bg-white px-6 text-center">
+    <div className="mt-7 flex min-h-[360px] flex-col items-center justify-center rounded-lg border border-dashed bg-white px-6 text-center lg:mt-10 lg:min-h-[420px]">
       <span className="flex size-16 items-center justify-center rounded-lg bg-[#f0eefb] text-[#5b4fc4]">
         <Folder aria-hidden="true" className="size-8" />
       </span>

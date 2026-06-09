@@ -2,7 +2,7 @@ export default function WorkspaceLoading() {
   return (
     <main className="min-h-dvh bg-[#efeee8]">
       <div className="flex min-h-dvh animate-pulse">
-        <aside className="h-dvh w-64 shrink-0 border-r bg-white">
+        <aside className="hidden h-dvh w-64 shrink-0 border-r bg-white lg:block">
           <div className="border-b px-5 py-5">
             <div className="h-11 w-40 rounded-md bg-secondary" />
           </div>
@@ -15,19 +15,19 @@ export default function WorkspaceLoading() {
           </div>
         </aside>
         <section className="min-w-0 flex-1">
-          <div className="h-16 border-b bg-white" />
-          <div className="px-8 py-7">
-            <div className="h-8 w-52 rounded bg-white" />
-            <div className="mt-3 h-4 w-96 rounded bg-white" />
-            <div className="mt-7 grid grid-cols-4 gap-4">
+          <div className="h-24 border-b bg-white lg:h-16" />
+          <div className="px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+            <div className="h-8 w-48 rounded bg-white sm:w-52" />
+            <div className="mt-3 h-4 max-w-full rounded bg-white sm:w-96" />
+            <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
-                  className="h-28 rounded-lg border bg-white"
+                  className="h-24 rounded-lg border bg-white lg:h-28"
                   key={index}
                 />
               ))}
             </div>
-            <div className="mt-6 h-[420px] rounded-lg border bg-white" />
+            <div className="mt-6 h-[360px] rounded-lg border bg-white lg:h-[420px]" />
           </div>
         </section>
       </div>

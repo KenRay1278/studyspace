@@ -44,8 +44,8 @@ export function ContributionsView({
   );
 
   return (
-    <div className="mx-auto w-full max-w-[1680px] px-8 py-7">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto w-full max-w-[1680px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-normal">
             Contributions
@@ -54,7 +54,7 @@ export function ContributionsView({
             Verified work only. Pending or claimed tasks do not affect totals.
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href={`/workspaces/${workspaceId}/proof-of-work`}>
             <Download aria-hidden="true" />
             Export PDF
@@ -62,7 +62,7 @@ export function ContributionsView({
         </Button>
       </div>
 
-      <div className="mt-6 grid grid-cols-4 gap-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <SummaryCard
           label="Top contributor"
           value={topMember ? displayName(topMember.member.profiles) : "-"}
@@ -89,7 +89,7 @@ export function ContributionsView({
         <EmptyContributions />
       ) : (
         <>
-          <div className="mt-6 grid grid-cols-[1fr_1fr] gap-4">
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
             <section className="rounded-lg border bg-white p-5">
               <h2 className="font-medium">Member breakdown</h2>
               <div className="mt-5 space-y-5">
@@ -155,14 +155,14 @@ export function ContributionsView({
             </section>
           </div>
 
-          <section className="mt-6 overflow-x-auto rounded-lg border bg-white">
-            <div className="flex items-center justify-between border-b px-5 py-4">
+          <section className="mt-6 overflow-hidden rounded-lg border bg-white">
+            <div className="flex flex-col gap-1 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
               <h2 className="font-medium">Verified task ledger</h2>
               <span className="text-xs text-muted-foreground">
                 Immutable - append only
               </span>
             </div>
-            <div className="grid min-w-[900px] grid-cols-[1fr_180px_140px_110px] border-b bg-secondary/40 px-5 py-3 text-xs font-medium text-muted-foreground">
+            <div className="hidden grid-cols-[1fr_180px_140px_110px] border-b bg-secondary/40 px-5 py-3 text-xs font-medium text-muted-foreground lg:grid">
               <span>Task</span>
               <span>Member</span>
               <span>Category</span>
@@ -175,13 +175,28 @@ export function ContributionsView({
 
               return (
                 <div
-                  className="grid min-w-[900px] grid-cols-[1fr_180px_140px_110px] border-b px-5 py-4 text-sm last:border-b-0"
+                  className="grid grid-cols-2 gap-x-4 gap-y-3 border-b px-4 py-4 text-sm last:border-b-0 sm:px-5 lg:grid-cols-[1fr_180px_140px_110px] lg:gap-0"
                   key={entry.id}
                 >
-                  <span className="font-medium">{entry.title}</span>
-                  <span>{displayName(member?.profiles)}</span>
-                  <span>{entry.category}</span>
-                  <span className="font-medium text-primary">
+                  <span className="col-span-2 font-medium lg:col-span-1">
+                    {entry.title}
+                  </span>
+                  <span>
+                    <span className="block text-xs text-muted-foreground lg:hidden">
+                      Member
+                    </span>
+                    {displayName(member?.profiles)}
+                  </span>
+                  <span>
+                    <span className="block text-xs text-muted-foreground lg:hidden">
+                      Category
+                    </span>
+                    {entry.category}
+                  </span>
+                  <span className="col-span-2 font-medium text-primary lg:col-span-1">
+                    <span className="mr-1 text-xs font-normal text-muted-foreground lg:hidden">
+                      Weight
+                    </span>
                     {entry.weight} pts
                   </span>
                 </div>
@@ -204,9 +219,9 @@ function SummaryCard({
   value: string;
 }) {
   return (
-    <div className="rounded-lg border bg-white p-5">
+    <div className="rounded-lg border bg-white p-4 sm:p-5">
       <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-2 truncate text-2xl font-semibold tracking-normal">
+      <p className="mt-2 break-words text-xl font-semibold tracking-normal sm:text-2xl">
         {value}
       </p>
       <p className="mt-1 text-sm text-muted-foreground">{detail}</p>

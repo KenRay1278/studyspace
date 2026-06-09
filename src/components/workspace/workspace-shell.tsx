@@ -55,7 +55,7 @@ export function WorkspaceShell({
   return (
     <main className="min-h-dvh bg-[#efeee8]">
       <div className="flex min-h-dvh">
-        <aside className="sticky top-0 flex h-dvh w-64 shrink-0 flex-col border-r bg-white">
+        <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-white lg:flex">
           <Link className="flex items-center gap-3 border-b px-5 py-5" href="/">
             <StudySpaceLogo />
           </Link>
@@ -103,8 +103,38 @@ export function WorkspaceShell({
           </div>
         </aside>
 
-        <section className="min-w-0 flex-1">
-          <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-white px-8">
+        <section className="min-w-0 flex-1 pb-20 lg:pb-0">
+          <div className="sticky top-0 z-30 border-b bg-white lg:hidden">
+            <div className="flex h-14 items-center justify-between gap-3 px-4">
+              <Link aria-label="Back to projects" href="/">
+                <StudySpaceLogo compact iconClassName="size-9 rounded-md" />
+              </Link>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">{workspace.name}</p>
+                <p className="text-xs text-muted-foreground">{roleLabel(role)}</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MemberManagement
+                  currentUserId={currentUserId}
+                  currentUserRole={role}
+                  iconOnly
+                  members={members}
+                  workspace={workspace}
+                />
+                <WorkspaceSettings
+                  currentUserRole={role}
+                  iconOnly
+                  workspace={workspace}
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between border-t px-4 py-1.5">
+              <span className="text-xs text-muted-foreground">Invite code</span>
+              <InviteCodeButton code={workspace.invite_code} />
+            </div>
+          </div>
+
+          <div className="sticky top-0 z-30 hidden h-16 items-center justify-between border-b bg-white px-8 lg:flex">
             <div className="text-sm">
               <Link className="text-muted-foreground hover:text-foreground" href="/">
                 Projects
@@ -132,6 +162,27 @@ export function WorkspaceShell({
           {children}
         </section>
       </div>
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur lg:hidden">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = item.key === active;
+
+          return (
+            <Link
+              className={cn(
+                "flex min-w-0 flex-col items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground",
+                isActive && "bg-[#f0eefb] text-primary",
+              )}
+              href={`/workspaces/${workspace.id}/${item.href}`}
+              key={item.key}
+            >
+              <Icon aria-hidden="true" className="size-5" />
+              <span className="truncate">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </main>
   );
 }

@@ -36,8 +36,8 @@ export function ProofOfWorkView({
   });
 
   return (
-    <div className="mx-auto w-full max-w-[1680px] px-8 py-7 print-template-page">
-      <div className="mb-6 flex items-center justify-between print:hidden">
+    <div className="mx-auto w-full max-w-[1680px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7 print-template-page">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
         <div>
           <h1 className="text-2xl font-semibold tracking-normal">
             Proof of work export
@@ -46,17 +46,17 @@ export function ProofOfWorkView({
             The PDF export prints only the lecturer-readable receipt below.
           </p>
         </div>
-        <Button onClick={() => window.print()}>
+        <Button className="w-full sm:w-auto" onClick={() => window.print()}>
           <Printer aria-hidden="true" />
           Download PDF
         </Button>
       </div>
 
       <section
-        className="mx-auto max-w-6xl rounded-xl border-4 border-primary bg-[#f7f4ff] p-8 print-template print:border print:bg-white print:p-0"
+        className="mx-auto max-w-6xl rounded-lg border-2 border-primary bg-[#f7f4ff] p-4 sm:p-6 lg:rounded-xl lg:border-4 lg:p-8 print-template print:border print:bg-white print:p-0"
         data-print-template
       >
-        <div className="flex items-start justify-between gap-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div>
             <p className="text-2xl font-semibold tracking-normal">
               StudySpace
@@ -73,7 +73,7 @@ export function ProofOfWorkView({
           </span>
         </div>
 
-        <div className="mt-6 grid grid-cols-4 gap-3 rounded-lg border bg-white p-4 text-sm print-summary">
+        <div className="mt-6 grid grid-cols-2 gap-3 rounded-lg border bg-white p-4 text-sm sm:grid-cols-4 print-summary">
           <SummaryItem label="Workspace" value={workspace.name} />
           <SummaryItem label="Members" value={String(members.length)} />
           <SummaryItem label="Verified tasks" value={String(ledger.length)} />
@@ -91,7 +91,7 @@ export function ProofOfWorkView({
           </div>
         ) : (
           <>
-            <div className="mt-6 grid grid-cols-3 gap-4">
+            <div className="mt-6 grid gap-3 sm:grid-cols-3 sm:gap-4">
               <ProofCard
                 label="Total weight earned"
                 value={`${totalWeight} pts`}
@@ -103,7 +103,7 @@ export function ProofOfWorkView({
               />
             </div>
 
-            <div className="mt-6 grid grid-cols-[1fr_1fr] gap-4">
+            <div className="mt-6 grid gap-4 lg:grid-cols-2">
               <section className="rounded-lg border bg-white p-5">
                 <h2 className="font-medium">Member Breakdown</h2>
                 <div className="mt-5 space-y-4">
@@ -169,14 +169,14 @@ export function ProofOfWorkView({
               </section>
             </div>
 
-            <section className="mt-6 overflow-x-auto rounded-lg border bg-white">
+            <section className="mt-6 overflow-hidden rounded-lg border bg-white">
               <div className="border-b px-5 py-4">
                 <h2 className="font-medium">Work Detail Receipt</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Individual task breakdown for verified work
                 </p>
               </div>
-              <div className="grid min-w-[1000px] grid-cols-[140px_1fr_150px_170px_100px] border-b bg-secondary/50 px-5 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground print:min-w-0">
+              <div className="hidden grid-cols-[140px_1fr_150px_170px_100px] border-b bg-secondary/50 px-5 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground lg:grid print:grid">
                 <span>Verified</span>
                 <span>Task</span>
                 <span>Category</span>
@@ -190,14 +190,28 @@ export function ProofOfWorkView({
 
                 return (
                   <div
-                    className="grid min-w-[1000px] grid-cols-[140px_1fr_150px_170px_100px] border-b px-5 py-4 text-sm last:border-b-0 print:min-w-0"
+                    className="grid grid-cols-2 gap-x-4 gap-y-3 border-b px-4 py-4 text-sm last:border-b-0 sm:px-5 lg:grid-cols-[140px_1fr_150px_170px_100px] lg:gap-0 print:grid-cols-[140px_1fr_150px_170px_100px] print:gap-0"
                     key={entry.id}
                   >
-                    <span>{formatDate(entry.verified_at)}</span>
-                    <span className="font-medium">{entry.title}</span>
-                    <span>{entry.category}</span>
-                    <span>{displayName(member?.profiles)}</span>
-                    <span className="font-semibold text-primary">
+                    <span className="col-span-2 text-xs text-muted-foreground lg:col-span-1 lg:text-sm lg:text-foreground print:col-span-1 print:text-sm print:text-foreground">
+                      {formatDate(entry.verified_at)}
+                    </span>
+                    <span className="col-span-2 font-medium lg:col-span-1 print:col-span-1">
+                      {entry.title}
+                    </span>
+                    <span>
+                      <span className="block text-xs text-muted-foreground lg:hidden print:hidden">
+                        Category
+                      </span>
+                      {entry.category}
+                    </span>
+                    <span>
+                      <span className="block text-xs text-muted-foreground lg:hidden print:hidden">
+                        Member
+                      </span>
+                      {displayName(member?.profiles)}
+                    </span>
+                    <span className="col-span-2 font-semibold text-primary lg:col-span-1 print:col-span-1">
                       {entry.weight} pts
                     </span>
                   </div>
@@ -207,7 +221,7 @@ export function ProofOfWorkView({
           </>
         )}
 
-        <div className="mt-6 flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
+        <div className="mt-6 flex flex-col gap-1 border-t pt-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>Generated by StudySpace</span>
           <span>Verified ledger data only</span>
         </div>
@@ -229,11 +243,11 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
 
 function ProofCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border bg-white p-5">
+    <div className="rounded-lg border bg-white p-4 sm:p-5">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="mt-3 text-3xl font-semibold tracking-normal">{value}</p>
+      <p className="mt-3 text-2xl font-semibold tracking-normal sm:text-3xl">{value}</p>
     </div>
   );
 }

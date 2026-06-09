@@ -10,11 +10,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { Workspace, WorkspaceRole } from "@/lib/types";
 
 type WorkspaceSettingsProps = {
+  iconOnly?: boolean;
   currentUserRole: WorkspaceRole;
   workspace: Workspace;
 };
 
 export function WorkspaceSettings({
+  iconOnly = false,
   currentUserRole,
   workspace,
 }: WorkspaceSettingsProps) {
@@ -84,12 +86,12 @@ export function WorkspaceSettings({
         variant="outline"
       >
         <Settings2 aria-hidden="true" />
-        Settings
+        {iconOnly ? <span className="sr-only">Settings</span> : "Settings"}
       </Button>
 
       {isOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 px-4 py-8 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-lg border bg-white p-6 shadow-xl">
+          <div className="w-full max-w-xl rounded-lg border bg-white p-4 shadow-xl sm:p-6">
             <div>
               <h2 className="text-xl font-semibold tracking-normal">
                 Project settings
@@ -99,7 +101,7 @@ export function WorkspaceSettings({
               </p>
             </div>
 
-            <dl className="mt-6 grid grid-cols-2 gap-x-5 gap-y-4 border-y py-5 text-sm">
+            <dl className="mt-6 grid gap-4 border-y py-5 text-sm sm:grid-cols-2 sm:gap-x-5">
               <div>
                 <dt className="text-xs text-muted-foreground">Workspace</dt>
                 <dd className="mt-1 font-medium">{workspace.name}</dd>
@@ -120,7 +122,7 @@ export function WorkspaceSettings({
 
             <section className="mt-6">
               <h3 className="text-sm font-medium">Membership</h3>
-              <div className="mt-3 flex items-center justify-between gap-5 rounded-md border px-4 py-4">
+              <div className="mt-3 flex flex-col gap-4 rounded-md border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
                 <div>
                   <p className="text-sm font-medium">Leave workspace</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -145,7 +147,7 @@ export function WorkspaceSettings({
                 <h3 className="text-sm font-medium text-destructive">
                   Danger zone
                 </h3>
-                <div className="mt-3 flex items-center justify-between gap-5 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-4">
+                <div className="mt-3 flex flex-col gap-4 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
                   <div>
                     <p className="text-sm font-medium">Delete workspace</p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -175,7 +177,7 @@ export function WorkspaceSettings({
 
       {isLeaveOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-lg border bg-white p-5 shadow-xl sm:p-6">
             <h2 className="text-xl font-semibold tracking-normal">
               Leave workspace?
             </h2>
@@ -184,7 +186,7 @@ export function WorkspaceSettings({
               <strong className="text-foreground">{workspace.name}</strong>.
               Verified contribution records remain in the ledger.
             </p>
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 disabled={isLeaving}
                 onClick={() => setIsLeaveOpen(false)}
@@ -211,7 +213,7 @@ export function WorkspaceSettings({
 
       {isDeleteOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-lg border bg-white p-5 shadow-xl sm:p-6">
             <h2 className="text-xl font-semibold tracking-normal">
               Delete workspace?
             </h2>
@@ -226,7 +228,7 @@ export function WorkspaceSettings({
               placeholder={workspace.name}
               value={deleteConfirmation}
             />
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 disabled={isDeleting}
                 onClick={() => setIsDeleteOpen(false)}

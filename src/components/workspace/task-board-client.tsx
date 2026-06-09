@@ -268,29 +268,29 @@ export function TaskBoardClient({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1680px] px-8 py-7">
-      <div className="flex items-center justify-between gap-4">
+    <div className="mx-auto w-full max-w-[1680px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-normal">Task Board</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Weighted bounties move from open to verified through peer consensus.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="relative">
             <Search
               aria-hidden="true"
               className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <input
-              className="h-10 w-64 rounded-md border bg-white pl-9 pr-3 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20"
+              className="h-10 w-full rounded-md border bg-white pl-9 pr-3 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20 sm:w-64"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search bounties..."
               value={query}
             />
           </label>
           {canEdit ? (
-            <Button onClick={openCreateModal}>
+            <Button className="w-full sm:w-auto" onClick={openCreateModal}>
               <Plus aria-hidden="true" />
               New Bounty
             </Button>
@@ -298,7 +298,7 @@ export function TaskBoardClient({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-5 gap-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
         <StatCard label="Open Bounties" value={stats.open} />
         <StatCard label="Pending Approval" value={stats.pending} />
         <StatCard label="Rejected" value={stats.rejected} />
@@ -321,7 +321,7 @@ export function TaskBoardClient({
           <EmptyTasks canEdit={canEdit} onCreate={openCreateModal} />
         ) : (
           <div>
-            <div className="grid grid-cols-[minmax(220px,1.55fr)_minmax(120px,.8fr)_135px_75px_minmax(170px,1fr)] border-b bg-secondary/40 px-5 py-3 text-xs font-medium text-muted-foreground">
+            <div className="hidden grid-cols-[minmax(220px,1.55fr)_minmax(120px,.8fr)_135px_75px_minmax(170px,1fr)] border-b bg-secondary/40 px-5 py-3 text-xs font-medium text-muted-foreground lg:grid">
               <span>Bounty Name</span>
               <span>Assignee</span>
               <span>Status</span>
@@ -347,10 +347,10 @@ export function TaskBoardClient({
 
               return (
                 <div
-                  className="grid grid-cols-[minmax(220px,1.55fr)_minmax(120px,.8fr)_135px_75px_minmax(170px,1fr)] items-center border-b px-5 py-4 last:border-b-0"
+                  className="grid grid-cols-2 gap-4 border-b px-4 py-4 last:border-b-0 sm:px-5 lg:grid-cols-[minmax(220px,1.55fr)_minmax(120px,.8fr)_135px_75px_minmax(170px,1fr)] lg:items-center lg:gap-0"
                   key={task.id}
                 >
-                  <div className="min-w-0 pr-5">
+                  <div className="col-span-2 min-w-0 lg:col-span-1 lg:pr-5">
                     <div className="flex min-w-0 items-center gap-2">
                       <button
                         className="min-w-0 text-left font-medium hover:underline"
@@ -375,27 +375,45 @@ export function TaskBoardClient({
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex min-w-0 items-center gap-2 pr-3 text-sm">
-                    {assignee ? (
-                      <UserAvatar
-                        className="size-7"
-                        profile={assignee.profiles}
-                      />
-                    ) : null}
-                    <span className="truncate">{assigneeName}</span>
+                  <div className="min-w-0 text-sm lg:pr-3">
+                    <span className="mb-1 block text-xs text-muted-foreground lg:hidden">
+                      Assignee
+                    </span>
+                    <div className="flex min-w-0 items-center gap-2">
+                      {assignee ? (
+                        <UserAvatar
+                          className="size-7"
+                          profile={assignee.profiles}
+                        />
+                      ) : null}
+                      <span className="truncate">{assigneeName}</span>
+                    </div>
                   </div>
-                  <span
-                    className={cn(
-                      "w-fit rounded-full px-3 py-1 text-xs font-medium",
-                      statusTone[task.status],
-                    )}
-                  >
-                    {statusLabel(task.status)}
-                  </span>
-                  <span className="font-medium text-primary">
-                    {task.weight} pts
-                  </span>
-                  <div className="flex min-w-0 flex-wrap gap-2">
+                  <div>
+                    <span className="mb-1 block text-xs text-muted-foreground lg:hidden">
+                      Status
+                    </span>
+                    <span
+                      className={cn(
+                        "block w-fit rounded-full px-3 py-1 text-xs font-medium",
+                        statusTone[task.status],
+                      )}
+                    >
+                      {statusLabel(task.status)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="mb-1 block text-xs text-muted-foreground lg:hidden">
+                      Weight
+                    </span>
+                    <span className="font-medium text-primary">
+                      {task.weight} pts
+                    </span>
+                  </div>
+                  <div className="col-span-2 flex min-w-0 flex-wrap gap-2 lg:col-span-1">
+                    <span className="w-full text-xs text-muted-foreground lg:hidden">
+                      Actions
+                    </span>
                     <TaskActions
                       busyAction={busyAction}
                       canEdit={canEdit}
@@ -419,7 +437,7 @@ export function TaskBoardClient({
 
       {isModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 px-4 py-8 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-lg border bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg rounded-lg border bg-white p-5 shadow-xl sm:p-6">
             <div>
               <h2 className="text-xl font-semibold tracking-normal">
                 {modalTask ? "Edit bounty" : "Create bounty"}
@@ -457,7 +475,7 @@ export function TaskBoardClient({
                   {form.description.length}/{TASK_DESCRIPTION_MAX_LENGTH}
                 </span>
               </label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block space-y-2">
                   <span className="text-sm font-medium">Category</span>
                   <input
@@ -493,7 +511,7 @@ export function TaskBoardClient({
                 </div>
               ) : null}
             </div>
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 disabled={busyAction === "save-task"}
                 onClick={() => {
@@ -519,7 +537,7 @@ export function TaskBoardClient({
 
       {claimTask ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-lg border bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-lg border bg-white p-5 shadow-xl sm:p-6">
             <h2 className="text-xl font-semibold tracking-normal">
               Claim this bounty?
             </h2>
@@ -527,7 +545,7 @@ export function TaskBoardClient({
               You are claiming <strong>{claimTask.title}</strong>. Its details
               will lock until the task completes or is rejected and reopened.
             </p>
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
                 disabled={busyAction === `claim_task-${claimTask.id}`}
                 onClick={() => setClaimTask(null)}
@@ -600,8 +618,8 @@ function StatCard({
   value: number;
 }) {
   return (
-    <div className="rounded-lg border bg-white p-5">
-      <p className={cn("text-3xl font-semibold", accent && "text-primary")}>
+    <div className="rounded-lg border bg-white p-4 sm:p-5">
+      <p className={cn("text-2xl font-semibold sm:text-3xl", accent && "text-primary")}>
         {value}
       </p>
       <p className="mt-2 text-sm text-muted-foreground">{label}</p>
@@ -749,8 +767,8 @@ function TaskDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 px-4 py-8 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-lg border bg-white p-6 shadow-xl">
-        <div className="flex items-start justify-between gap-4">
+      <div className="w-full max-w-2xl rounded-lg border bg-white p-5 shadow-xl sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0">
             <span className="w-fit rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground">
               {task.category}
@@ -769,7 +787,7 @@ function TaskDetailModal({
           </span>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-4 rounded-md border bg-secondary/30 p-4 text-sm">
+        <div className="mt-5 grid gap-4 rounded-md border bg-secondary/30 p-4 text-sm sm:grid-cols-2">
           <div>
             <p className="text-xs text-muted-foreground">Assignee</p>
             <div className="mt-2 flex items-center gap-2 font-medium">
